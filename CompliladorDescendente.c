@@ -10,14 +10,28 @@
 
 /******************Declaraciones Globales*************************/
 FILE * in;
-typedef enum {
- INICIO, FIN, LEER, ESCRIBIR, ID, CONSTANTE, PARENIZQUIERDO, PARENDERECHO, PUNTOYCOMA, COMA, ASIGNACION, SUMA, RESTA, FDT, ERRORLEXICO
+typedef enum { // typedef crea un sinonimo TOKEN para poder llamar a los valores del enum
+ INICIO, 			// 0 
+ FIN,    			// 1
+ LEER, 				// 2
+ ESCRIBIR, 			// 3
+ ID,  				// 4
+ CONSTANTE,  		// 5
+ PARENIZQUIERDO, 	// 6
+ PARENDERECHO, 		// 7
+ PUNTOYCOMA, 		// 8
+ COMA, 				// 9
+ ASIGNACION, 		// 10
+ SUMA, 				// 11
+ RESTA, 			// 12
+ FDT, 				// 13
+ ERRORLEXICO		// 14	
 } TOKEN;
 typedef struct {
-     char identifi[TAMLEX];
-     TOKEN t;	/* t=0, 1, 2, 3 Palabra Reservada, t=ID=4 Identificador (ver enum) */
+     char identificador[TAMLEX];
+     TOKEN t;	// enum (Los valores que toman cada identificador estan comentados)
      } RegTS;
-RegTS TS[1000] = { {"inicio", INICIO}, {"fin", FIN}, {"leer", LEER}, {"escribir", ESCRIBIR },{"$", 99}  };
+RegTS TS[1000] = { {"inicio", INICIO}, {"fin", FIN}, {"leer", LEER}, {"escribir", ESCRIBIR}, {"$", 99}  };
 
 typedef struct{
      TOKEN clase;
@@ -53,7 +67,7 @@ REG_EXPRESION GenInfijo(REG_EXPRESION e1, char * op, REG_EXPRESION e2);
 
 void Match(TOKEN t);
 TOKEN ProximoToken();
-void ErrorLexico();
+void ErrorLexico(); //Ejemplo: 4ab, que no es ni un identificador ni una constante
 void ErrorSintactico();
 void Generar(char * co, char * a, char * b, char * c);
 char * Extraer(REG_EXPRESION * preg);
@@ -333,8 +347,8 @@ char * Extraer(REG_EXPRESION * preg) {
 int Buscar(char * id, RegTS * TS, TOKEN * t) {
  /* Determina si un identificador esta en la TS */
  int i = 0;
- while ( strcmp("$", TS[i].identifi) ) {
-  if ( !strcmp(id, TS[i].identifi) )  {
+ while ( strcmp("$", TS[i].identificador) ) {
+  if ( !strcmp(id, TS[i].identificador) )  {
    *t = TS[i].t;
    return 1; 
   }
@@ -346,11 +360,11 @@ int Buscar(char * id, RegTS * TS, TOKEN * t) {
 void Colocar(char * id, RegTS * TS){
  /* Agrega un identificador a la TS */
  int i = 4;
- while ( strcmp("$", TS[i].identifi) ) i++;
+ while ( strcmp("$", TS[i].identificador) ) i++;
   if ( i < 999 ) {
-  strcpy(TS[i].identifi, id );
+  strcpy(TS[i].identificador, id );
   TS[i].t = ID;
-  strcpy(TS[++i].identifi, "$" );
+  strcpy(TS[++i].identificador, "$" );
  }
 }
 
@@ -382,28 +396,30 @@ void Asignar(REG_EXPRESION izq, REG_EXPRESION der){
 TOKEN scanner()
 {
  int tabla[NUMESTADOS][NUMCOLS] = {
- { 1,  3 ,  5 ,  6 ,  7  ,  8  ,  9 , 10, 11, 14, 13,  0, 14 },
-{  1,  1 ,  2 ,  2 ,  2  ,  2  ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,    2 },
-{14, 14, 14, 14, 14, 14, 14, 14, 14 , 14, 14, 14, 14 },
-{  4,  3 ,  4 ,  4 ,  4  ,  4  ,  4 ,  4 ,   4 ,   4,   4,   4,   4 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
-{ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 } };
+// 	L   D   +   -   (   )   ,   ;   :  =  EOF  ''  OTRO
+ {  1,  3,  5,  6,  7,  8,  9, 10, 11, 14, 13,  0, 14 }, // 0
+ {  1,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 }, // 1
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 2 ID
+ {  4,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 }, // 3 
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 4 CTE
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 5 + 
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 6 -
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 7 (
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 8 )
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 9 ,
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 10 ;
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 14, 14, 14 }, // 11 
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 12 ASIG
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, // 13 FDT
+ { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }  // 14 Error
+ }; 
  int car;
  int col;
  int estado = 0;
  int i = 0;
  do {
   car = fgetc(in);
-  col = columna(car);
+  col = columna(car); // Funcion que retorna un int segun que caracter es
   estado = tabla[estado][col];
   if ( col != 11 )  { //si es espacio no lo agrega al buffer
    buffer[i] = car;
