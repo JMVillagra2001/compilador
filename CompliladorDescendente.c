@@ -84,23 +84,29 @@ int main(int argc, char * argv[])
  TOKEN tok;
  char nomArchi[TAMNOM];
  int l;
+ printf("TAMNOM: %d \n", TAMNOM);
  printf("argc: %d \n", argc);
  printf("argv: %s \n", *argv);
 /***************************Se abre el Archivo Fuente******************/
 // verifica errores posibles 
  if ( argc == 1 ) {
-  printf("Debe ingresar el nombre del archivo fuente (en lenguaje Micro) en la linea de comandos\n");  return -1;  }// no puso nombre de archivo fuente
+  printf("Debe ingresar el nombre del archivo fuente (en lenguaje Micro) en la linea de comandos\n");  
+  return -1;  
+  }// no puso nombre de archivo fuente
  if ( argc != 2 ) {
-  printf("Numero incorrecto de argumentos\n");  return -1;  }//los argumentos deben ser 2
-  strcpy(nomArchi, argv[1]);
-  l = strlen(nomArchi);
+  printf("Numero incorrecto de argumentos\n");  
+  return -1;  
+  }// los argumentos deben ser 2 (Nombre del programa y el nombre del archivo a compilar)
+  
+  strcpy(nomArchi, argv[1]); // Copia el nombre del archivo del segundo argumento enviado el cual debe ser de extension .m 
+  l = strlen(nomArchi); // Calcula la cantidad de caracteres del nombre del archivo
  if ( l > TAMNOM ) {
   printf("Nombre incorrecto del Archivo Fuente\n"); return -1; }
 // requiere para compilar un archivo de extensión.m archivo.m
  if ( nomArchi[l-1] != 'm' || nomArchi[l-2] != '.' ) {
   printf("Nombre incorrecto del Archivo Fuente\n"); return -1; }
  if ( (in = fopen(nomArchi, "r") ) == NULL )  {
-  printf("No se pudo abrir archivo fuente\n");  return -1;//no pudo abrir archivo
+  printf("No se pudo abrir archivo fuente\n");  return -1; //No pudo abrir archivo
  }
  
  
@@ -116,7 +122,7 @@ int main(int argc, char * argv[])
 /**********Procedimientos de Analisis Sintactico (PAS) *****************/
 /**********Procedimientos de Analisis Sintactico (PAS) *****************/
 
-void Objetivo(void)
+void Objetivo(void) // (void) indica de forma expresa que es una funcion que no recibe parametros
 {
  /* <objetivo> -> <programa> FDT #terminar */
  Programa();
@@ -147,7 +153,7 @@ void ListaSentencias(void)
   }// fin del while
 }// fin funcion
 
-void Sentencia(void) {
+void Sentencia(void) { // Hay 3 sentencias posibles, (IDENTIFICADOR, LEER, ESCRIBIR) por lo tanto con leer el primer caracter ya sabe de cual esta hablando y como es su estructura
  TOKEN tok = ProximoToken();
  REG_EXPRESION izq, der;
 //typedef struct{  TOKEN clase;  char nombre[TAMLEX];  int valor;  } REG_EXPRESION;
@@ -156,22 +162,22 @@ void Sentencia(void) {
    Identificador(&izq);
    Match(ASIGNACION);
    Expresion(&der);
-   Asignar(izq, der); //genera instrucción de asignacion
-   Match(PUNTOYCOMA);
+   Asignar(izq, der); // Genera instrucción de asignacion
+   Match(PUNTOYCOMA); // Termina la sentencia
    break;
   case LEER :	/* <sentencia> -> LEER ( <listaIdentificadores> ) */
    Match(LEER);
    Match(PARENIZQUIERDO);
    ListaIdentificadores();
    Match(PARENDERECHO);
-   Match(PUNTOYCOMA);
+   Match(PUNTOYCOMA); // Termina la sentencia
    break;
   case ESCRIBIR :	/* <sentencia> -> ESCRIBIR ( <listaExpresiones> ) */
    Match(ESCRIBIR);
    Match(PARENIZQUIERDO);
    ListaExpresiones();
    Match(PARENDERECHO);
-   Match(PUNTOYCOMA);
+   Match(PUNTOYCOMA); // Termina la sentencia
    break;
   default : return;
  }
